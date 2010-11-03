@@ -22,6 +22,7 @@
 #define SETTING_SKELETONIZE             18
 #define SETTING_SMOOTH                  19
 #define SETTING_THRESHOLD               20
+#define SETTING_TRACK_INNER_PEAKS       21
 
 #define MAGNETIC_MODE_NORMAL            0
 #define MAGNETIC_MODE_SETTINGS          1
@@ -57,11 +58,11 @@ class ofxMagneticApp : public ofBaseApp
 		{
 
             // Version
-            version = "0.2.6";
+            version = "0.2.7";
 
 			// Load XML
-			if (!__configXML.loadFile("config.xml")) exit();
-			if (!__calibrationXML.LoadFile("data/calibration.xml", TIXML_ENCODING_UTF8)) exit();
+			if (!__configXML.loadFile(ofToDataPath("config.xml"))) exit();
+			if (!__calibrationXML.LoadFile(ofToDataPath("calibration.xml"), TIXML_ENCODING_UTF8)) exit();
 
 			// Set width and height
 			__height = (int)__configXML.getValue("application:height", 600);
@@ -94,7 +95,7 @@ class ofxMagneticApp : public ofBaseApp
 			__bSettings = false;
 
 			// Set settings titles
-			__settingsCount = 21;
+			__settingsCount = 22;
 			__settingsTitles = new string[__settingsCount];
 			__settingsTitles[SETTING_AMPLIFY] = "AMPLIFY";
 			__settingsTitles[SETTING_CALIBRATION_TIME] = "CALIBRATION TIME";
@@ -117,6 +118,7 @@ class ofxMagneticApp : public ofBaseApp
 			__settingsTitles[SETTING_SKELETONIZE] = "SKELETONIZE";
 			__settingsTitles[SETTING_SMOOTH] = "SMOOTH";
 			__settingsTitles[SETTING_THRESHOLD] = "THRESHOLD";
+			__settingsTitles[SETTING_TRACK_INNER_PEAKS] = "TRACK INNER PEAKS";
 
 			// Get settings from XML
 			__amplify = (int)__configXML.getValue("config:amplify", 0);
@@ -143,6 +145,7 @@ class ofxMagneticApp : public ofBaseApp
 			__skeletonize = (int)__configXML.getValue("config:skeletonize", 0) == 1;
 			__smooth = (int)__configXML.getValue("config:smooth", 0);
 			__threshold = (int)__configXML.getValue("config:threshold", 127);
+			__trackInnerPeaks = (int)__configXML.getValue("config:trackInnerPeaks", 0) == 1;
 
 			// Set peak radius in blobs
 			__blobs.peakRadius = __peakRadius;
@@ -639,7 +642,7 @@ class ofxMagneticApp : public ofBaseApp
 
                         case SETTING_SKELETONIZE:
 							setting += __skeletonize > 0 ? "ON" : "OFF";
-							description = "Converts blobs to skeletons and adds joints to peak list";
+							description = "Thins blobs to skeletons (not yet implemented)";
 
 							break;
 
@@ -654,6 +657,10 @@ class ofxMagneticApp : public ofBaseApp
 							description = "Shades of grey higher than this value make up blobs";
 
 							break;
+
+                        case SETTING_TRACK_INNER_PEAKS:
+                            setting += __trackInnerPeaks > 0 ? "ON" : "OFF";
+                            description = "Includes \"valleys\" in peak tracking";
 
 					}
 
@@ -735,8 +742,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust blur
 								if (key == OF_KEY_DOWN) __amplify--;
 								if (key == OF_KEY_UP) __amplify++;
-								if (__amplify < 0) __amplify = 0;
-								if (__amplify > 300) __amplify = 300;
+								__amplify = CLAMP(__amplify, 0, 300);
 
 								break;
 
@@ -745,8 +751,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust blur
 								if (key == OF_KEY_DOWN) __calibrationTime--;
 								if (key == OF_KEY_UP) __calibrationTime++;
-								if (__calibrationTime < 100) __calibrationTime = 100;
-								if (__calibrationTime > 5000) __calibrationTime = 5000;
+								__calibrationTime = CLAMP(__calibrationTime, 100, 5000);
 
 								break;
 
@@ -755,23 +760,23 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust contour smoothing
 								if (key == OF_KEY_DOWN) __contourSmoothing--;
 								if (key == OF_KEY_UP) __contourSmoothing++;
-								if (__contourSmoothing < 0) __contourSmoothing = 0;
-								if (__contourSmoothing > 100) __contourSmoothing = 100;
+								__contourSmoothing = CLAMP(__contourSmoothing, 0, 100);
 
 								break;
 
 							case SETTING_DEVICE_ID:
+                                {
 
 								// Switch cameras
 								int lastDeviceID = __deviceID;
 								if (key == OF_KEY_DOWN) __deviceID--;
 								if (key == OF_KEY_UP) __deviceID++;
-								if (__deviceID >= __deviceCount - 1) __deviceID = __deviceCount - 1;;
-								if (__deviceID < 0) __deviceID = 0;
+								__deviceID = CLAMP(__deviceID, 0, __deviceCount - 1);
 
 								// Reset camera
 								if (__deviceID != lastDeviceID) __initCamera();
 
+                                }
 								break;
 
 							case SETTING_DILATE:
@@ -779,8 +784,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Clamp dilate
 								if (key == OF_KEY_DOWN) __dilate--;
 								if (key == OF_KEY_UP) __dilate++;
-								if (__dilate < 0) __dilate = 0;
-								if (__dilate > 100) __dilate = 100;
+								__dilate = CLAMP(__dilate, 0, 100);
 
 								break;
 
@@ -789,8 +793,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Clamp erode
 								if (key == OF_KEY_DOWN) __erode--;
 								if (key == OF_KEY_UP) __erode++;
-								if (__erode < 0) __erode = 0;
-								if (__erode > 100) __erode = 100;
+								__erode = CLAMP(__erode, 0, 100);
 
 								break;
 
@@ -813,8 +816,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust frame rate
 								if (key == OF_KEY_DOWN) __frameRate--;
 								if (key == OF_KEY_UP) __frameRate++;
-								if (__frameRate < 5) __frameRate = 5;
-								if (__frameRate > 120) __frameRate = 120;
+								__frameRate = CLAMP(__frameRate, 5, 120);
 
 								// Update frame rate
 								__vidGrabber.setDesiredFrameRate(__frameRate);
@@ -826,8 +828,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust blur
 								if (key == OF_KEY_DOWN) __blur--;
 								if (key == OF_KEY_UP) __blur++;
-								if (__blur < 0) __blur = 0;
-								if (__blur > 100) __blur = 100;
+								__blur = CLAMP(__blur, 0, 100);
 
 								break;
 
@@ -836,8 +837,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust blur
 								if (key == OF_KEY_DOWN) __noiseReduction--;
 								if (key == OF_KEY_UP) __noiseReduction++;
-								if (__noiseReduction < 0) __noiseReduction = 0;
-								if (__noiseReduction > 100) __noiseReduction = 100;
+								__noiseReduction = CLAMP(__noiseReduction, 0, 100);
 
 								break;
 
@@ -853,8 +853,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust maximum blob count
 								if (key == OF_KEY_DOWN) __maxBlobs--;
 								if (key == OF_KEY_UP) __maxBlobs++;
-								if (__maxBlobs < 1) __maxBlobs = 1;
-								if (__maxBlobs > 100) __maxBlobs = 100;
+								__maxBlobs = CLAMP(__maxBlobs, 1, 100);
 
 								break;
 
@@ -863,8 +862,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust maximum blob size
 								if (key == OF_KEY_DOWN) __maxBlobSize--;
 								if (key == OF_KEY_UP) __maxBlobSize++;
-								if (__maxBlobSize < __minBlobSize + 1) __maxBlobSize = __minBlobSize + 1;
-								if (__maxBlobSize > 4000) __maxBlobSize = 4000;
+								__maxBlobSize = CLAMP(__maxBlobSize, __minBlobSize + 1, 4000);
 
 								break;
 
@@ -873,8 +871,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust minimum blob size
 								if (key == OF_KEY_DOWN) __minBlobSize--;
 								if (key == OF_KEY_UP) __minBlobSize++;
-								if (__minBlobSize < 1) __minBlobSize = 1;
-								if (__minBlobSize > __maxBlobSize - 1) __maxBlobSize = __maxBlobSize - 1;
+								__minBlobSize = CLAMP(__minBlobSize, 1, __maxBlobSize - 1);
 
 								break;
 
@@ -883,8 +880,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust simulated blob radius
 								if (key == OF_KEY_DOWN) __peakGapDistance--;
 								if (key == OF_KEY_UP) __peakGapDistance++;
-								if (__peakGapDistance < 1) __peakGapDistance = 1;
-								if (__peakGapDistance > 100) __peakGapDistance = 100;
+								__peakGapDistance = CLAMP(__peakGapDistance, 1, 100);
 
 								break;
 
@@ -893,8 +889,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust simulated blob radius
 								if (key == OF_KEY_DOWN) __peakRadius--;
 								if (key == OF_KEY_UP) __peakRadius++;
-								if (__peakRadius < 1) __peakRadius = 1;
-								if (__peakRadius > 100) __peakRadius = 100;
+								__peakRadius = CLAMP(__peakRadius, 1, 100);
 
 								break;
 
@@ -903,8 +898,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust simulated blob radius
 								if (key == OF_KEY_DOWN) __simulatedBlobRadius--;
 								if (key == OF_KEY_UP) __simulatedBlobRadius++;
-								if (__simulatedBlobRadius < __minBlobSize) __simulatedBlobRadius = __minBlobSize;
-								if (__simulatedBlobRadius > 200) __simulatedBlobRadius = 200;
+								__simulatedBlobRadius = CLAMP(__simulatedBlobRadius, __minBlobSize, 200);
 
 								break;
 
@@ -920,8 +914,7 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust blur
 								if (key == OF_KEY_DOWN) __smooth--;
 								if (key == OF_KEY_UP) __smooth++;
-								if (__smooth < 0) __smooth = 0;
-								if (__smooth > 100) __smooth = 100;
+								__smooth = CLAMP(__smooth, 0, 100);
 
 								break;
 
@@ -930,10 +923,16 @@ class ofxMagneticApp : public ofBaseApp
 								// Adjust threshold
 								if (key == OF_KEY_DOWN) __threshold--;
 								if (key == OF_KEY_UP) __threshold++;
-								if (__threshold < 0) __threshold = 0;
-								if (__threshold > 255) __threshold = 255;
+								__threshold = CLAMP(__threshold, 0, 255);
 
 								break;
+
+                            case SETTING_TRACK_INNER_PEAKS:
+
+                                // Toggle skeletonize
+                                __skeletonize = !__skeletonize;
+
+                                break;
 
 						}
 
@@ -1279,6 +1278,7 @@ class ofxMagneticApp : public ofBaseApp
 		int __smooth;
 		string* __settingsTitles;
 		int __threshold;
+		bool __trackInnerPeaks;
 
 		// Contour smoothing
 		vector<ofPoint> __smoothContours(vector<ofPoint> points);

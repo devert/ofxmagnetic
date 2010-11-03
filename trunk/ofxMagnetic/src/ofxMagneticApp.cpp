@@ -205,8 +205,8 @@ vector<ofxMagneticBlob> ofxMagneticApp::getBlobs(bool bReturnPoints, bool bRetur
 
                         }
 
-                        // Skeletonization is on
-                        if (__skeletonize)
+                        // Inner peak tracking is on
+                        if (__trackInnerPeaks)
                         {
 
                             // Set "valley" flag
@@ -244,6 +244,7 @@ vector<ofxMagneticBlob> ofxMagneticApp::getBlobs(bool bReturnPoints, bool bRetur
                             ofxMagneticPeak peak;
                             peak.ID = -1;
                             peak.frame = __frame;
+                            peak.inner = bValley;
                             peak.x = blob.points[j].x;
                             peak.y = blob.points[j].y;
                             peak.pX = peak.x;
@@ -455,10 +456,11 @@ void ofxMagneticApp::__saveSettings()
 		__configXML.setValue("config:skeletonize", __skeletonize ? 1 : 0, 0);
 		__configXML.setValue("config:smooth", __smooth, 0);
 		__configXML.setValue("config:threshold", __threshold, 0);
+		__configXML.setValue("config:trackInnerPeaks", __trackInnerPeaks, 0);
 
 		// Save settings and calibration
-		__configXML.saveFile("config.xml");
-		__calibrationXML.SaveFile("data/calibration.xml");
+		__configXML.saveFile(ofToDataPath("config.xml"));
+		__calibrationXML.SaveFile(ofToDataPath("calibration.xml"));
 
 	}
 
