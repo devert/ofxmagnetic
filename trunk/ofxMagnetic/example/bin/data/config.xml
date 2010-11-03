@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+    <amplify>0</amplify>
+    <application>
+        <width>1024</width>
+        <height>768</height>
+    </application>
+    <blur>0</blur>
+    <calibrationTime>1000</calibrationTime>
+    <captureDevice>
+        <id>0</id>
+        <width>640</width>
+        <height>480</height>
+    </captureDevice>
+    <contourSmoothing>3</contourSmoothing>
+    <dilate>0</dilate>
+    <erode>0</erode>
+    <flip>
+        <horizontal>1</horizontal>
+        <vertical>0</vertical>
+    </flip>
+    <frameRate>30</frameRate>
+    <fullscreen>0</fullscreen>
+    <invert>0</invert>
+    <maxBlobs>10</maxBlobs>
+    <maxBlobSize>400</maxBlobSize>
+    <minBlobSize>4</minBlobSize>
+    <noiseReduction>0</noiseReduction>
+    <peakGapDistance>6</peakGapDistance>
+    <peakRadius>30</peakRadius>
+    <simulatedBlobRadius>100</simulatedBlobRadius>
+    <skeletonize>1</skeletonize>
+    <smooth>3</smooth>
+    <threshold>70</threshold>
+</config>

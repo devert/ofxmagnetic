@@ -1,0 +1,12 @@
+INSTALLATION
+
+1. Place the "ofxMagnetic" folder into your "[openFrameworks]/addons" folder.
+2. Copy the files in "ofxMagnetic/docs/video" over to you "[openFrameworks]/libs/openFrameworks/video" folder.  Overwrite "ofVideoGrabber.h" and "ofVideoGrabber.cpp" when prompted.  This adds the "getDeviceCount()" function to your video grabber class, which is required to run Magnetic and is very useful, in general.  If you don't want to overwrite these files, just copy the function over.
+
+PROJECT
+
+1. Go to your "[openFrameWorks directory]/addons/ofxMagnetic/example/" folder and open "magneticExample.workspace" in Code::Blocks for Windows.
+2. In addition to the core openFrameworks library (with the included ofVideoGrabber update), you will need the "ofxOpenCV" and "ofxXmlSettings" addons, available in the FAT version of openFrameworks.
+3. This project assumes you are using the "GNU GCC Compiler" with the openFrameworks includes located at "C:\MinGW".  Adjust this if needed in Settings > Compiler & Debugger in Code::Blocks.
+4. Build and run the project.
+5. Follow the instructions on the startup screen for adjust calibration, settings, etc.
