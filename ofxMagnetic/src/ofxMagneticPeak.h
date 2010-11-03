@@ -8,6 +8,7 @@ typedef struct ofxMagneticPeak
     // Define peak structure
     int ID;
     int frame;
+    bool inner;
     float x;
     float y;
     float pX;

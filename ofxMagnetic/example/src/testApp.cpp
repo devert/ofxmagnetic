@@ -28,6 +28,7 @@ void testApp::draw()
 
     // Draw video
     ofSetColor(255, 255, 255, 255);
+    ofxMagneticApp::getVideo().draw(0, 0, ofGetWidth(), ofGetHeight());
 
     // Iterate through blobs
     vector<ofxMagneticBlob> blobs = getBlobs(true, true);
@@ -92,7 +93,7 @@ void testApp::keyPressed(int key)
     // Pass to Magnetic
     ofxMagneticApp::keyPressed(key);
 
-    // TO DO: Put your ketPressed code here
+    // TO DO: Put your keyPressed code here
 
 }
 

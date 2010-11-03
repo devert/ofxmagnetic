@@ -2,8 +2,8 @@
 <config>
     <amplify>0</amplify>
     <application>
-        <width>1024</width>
-        <height>768</height>
+        <width>1600</width>
+        <height>900</height>
     </application>
     <blur>0</blur>
     <calibrationTime>1000</calibrationTime>
@@ -32,4 +32,5 @@
     <skeletonize>1</skeletonize>
     <smooth>3</smooth>
     <threshold>70</threshold>
+    <trackInnerPeaks>1</trackInnerPeaks>
 </config>
