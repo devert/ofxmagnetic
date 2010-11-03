@@ -2,8 +2,8 @@
 <config>
     <amplify>0</amplify>
     <application>
-        <width>1600</width>
-        <height>900</height>
+        <width>1024</width>
+        <height>9768</height>
     </application>
     <blur>0</blur>
     <calibrationTime>1000</calibrationTime>
